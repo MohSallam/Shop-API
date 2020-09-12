@@ -14,9 +14,6 @@ If you use the Spring Boot Maven
 ## Endpoints
 * ### Get All items
 		GET http://localhost:8080/items
-	
-* ### Create a new Cart
-		GET http://localhost:8080/cart
 		
 		Response
 		[
@@ -33,6 +30,11 @@ If you use the Spring Boot Maven
 				"stockQuantity": 20
 			}
 		]
+	
+* ### Create a new Cart
+		GET http://localhost:8080/cart
+		
+		
 		
 * ### Get a Cart by ID
 		GET http://localhost:8080/cart/{cartId}
