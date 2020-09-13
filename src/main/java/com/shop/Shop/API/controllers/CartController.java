@@ -1,14 +1,10 @@
 package com.shop.Shop.API.controllers;
 
 
-import com.shop.Shop.API.domain.Cart;
-import com.shop.Shop.API.domain.Item;
-import com.shop.Shop.API.domain.ItemDTO;
-import com.shop.Shop.API.domain.ItemOrder;
+import com.shop.Shop.API.domain.*;
+import com.shop.Shop.API.exceptions.QuantityNotEnoughException;
 import com.shop.Shop.API.service.CartService;
-import com.shop.Shop.API.service.CartServiceImpl;
 import com.shop.Shop.API.service.ItemService;
-import com.shop.Shop.API.service.ItemServiceImpl;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -31,23 +27,23 @@ public class CartController {
     ModelMapper modelMapper;
 
     @GetMapping
-    public ResponseEntity<String> createCart(){
+    public ResponseEntity<?> createCart() {
         Cart cart = new Cart();
         cartService.save(cart);
-        return new ResponseEntity<>("Cart created with ID : " + cart.getId(), HttpStatus.CREATED);
+        GeneralDTO generalDTO = new GeneralDTO();
+        generalDTO.setHttpStatus(HttpStatus.CREATED);
+        generalDTO.setMessage("Cart created with ID : " + cart.getId());
+        return new ResponseEntity<>(generalDTO, HttpStatus.CREATED);
     }
 
-    @PostMapping("/{id}")
+    @PostMapping("/{id}/order")
     public ResponseEntity<?> order(@PathVariable long id, @RequestBody List<ItemOrder> orders){
         Cart cart = cartService.findById(id);
         List<ItemDTO> itemDTOS = new ArrayList<>();
         for(ItemOrder order : orders){
             Item item = itemService.findById(order.getItem().getid());
-            if(order.getQuantity() > item.getStockQuantity()){
-                return new ResponseEntity<String>("Quantity : "
-                        + order.getQuantity() + " requested for item "
-                        + item.getName() + " is more than stock quantity", HttpStatus.NOT_ACCEPTABLE);
-            }
+            if (order.getQuantity() > item.getStockQuantity())
+                throw new QuantityNotEnoughException(order.getQuantity());
             item.setStockQuantity(item.getStockQuantity() - order.getQuantity());
             itemService.save(item);
             ItemOrder itemOrder = new ItemOrder(item, order.getQuantity(), cart.getId());
