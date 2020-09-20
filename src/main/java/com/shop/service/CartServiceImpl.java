@@ -3,6 +3,7 @@ package com.shop.service;
 import com.shop.domain.Cart;
 import com.shop.domain.Item;
 import com.shop.domain.ItemOrder;
+import com.shop.domain.dto.CartDTO;
 import com.shop.domain.dto.GeneralDTO;
 import com.shop.domain.dto.ItemDTO;
 import com.shop.exceptions.CartNotFoundException;
@@ -13,9 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class CartServiceImpl implements CartService {
@@ -44,7 +43,7 @@ public class CartServiceImpl implements CartService {
         return generalDTO;
     }
 
-    public Map<String, Object> addOrder(List<ItemOrder> orders, long id) {
+    public CartDTO addOrder(List<ItemOrder> orders, long id) {
         Cart cart = checkCart(id);
         List<ItemDTO> itemDTOS = new ArrayList<>();
         for (ItemOrder order : orders) {
@@ -62,10 +61,7 @@ public class CartServiceImpl implements CartService {
             itemDTOS.add(itemDto);
         }
         save(cart);
-        Map<String, Object> summary = new HashMap<>();
-        summary.put("Total price", cart.getPrice());
-        summary.put("Cart Items", itemDTOS);
-        return summary;
+        return new CartDTO(cart.getPrice(), itemDTOS);
     }
 
     public List<Cart> findAll() {
